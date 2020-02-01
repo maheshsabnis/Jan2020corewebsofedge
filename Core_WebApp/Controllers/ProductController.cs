@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Core_WebApp.Models;
 using Core_WebApp.Services;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Core_WebApp.Controllers
 {
@@ -23,9 +24,11 @@ namespace Core_WebApp.Controllers
     {
         // inject the Product Repository
         private IRepository<Product, int> repository;
-        public ProductController(IRepository<Product, int> repository)
+        private IRepository<Category, int> catRepositiry;
+        public ProductController(IRepository<Product, int> repository, IRepository<Category, int> catRepositiry)
         {
             this.repository = repository;
+            this.catRepositiry = catRepositiry;
         }
 
         /// <summary>
@@ -42,9 +45,14 @@ namespace Core_WebApp.Controllers
         /// Return an empty Product Object to create new Product 
         /// </summary>
         /// <returns></returns>
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             var res = new Product();
+            // get list of categories and assign it to the ViewBag
+            // ViewBag.<Key> = value, <key> will always be the property that is to be posted from View
+            // to bind the Collection/List/IEnumarable to UI element use SelectList() class of ASP.NET Core
+            // dataValueFiled will be posted
+            ViewBag.CategoryRowId = new SelectList(await catRepositiry.GetAsync(), "CategoryRowId", "CategoryName");
             return View(res);
         }
         /// <summary>
@@ -60,6 +68,10 @@ namespace Core_WebApp.Controllers
                 var res = await repository.CreateAsync(Product);
                 return RedirectToAction("Index"); //redirect to Index action method
             }
+            // if an action is returning a view that accepts ViewBag then
+            // the action must pass ViewBag to it.
+            ViewBag.CategoryRowId = new SelectList(await catRepositiry.GetAsync(), "CategoryRowId", "CategoryName");
+
             return View(Product); // stay on Create View with errors
         }
 

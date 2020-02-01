@@ -30,6 +30,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Price)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CategoryRowId)
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -53,6 +56,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CategoryRowId)
             </td>
             <td>
                 @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
