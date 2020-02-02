@@ -33,7 +33,7 @@ namespace Core_WebApp.Models
         [Required(ErrorMessage = "Description Must")]
         public string Description { get; set; }
         [Required(ErrorMessage = "Price us Must")]
-        [NumericNonNegative(ErrorMessage ="Price cannot be -ve")]
+       // [NumericNonNegative(ErrorMessage ="Price cannot be -ve")]
         public int Price { get; set; }
         [ForeignKey("CategoryRowId")]
         public int CategoryRowId { get; set; }

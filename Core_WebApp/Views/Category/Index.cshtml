@@ -47,8 +47,9 @@
                 @Html.DisplayFor(modelItem => item.BasePrice)
             </td>
             <td>
-                @Html.ActionLink("Edit", "Edit", new {  id=item.CategoryRowId }) |
-                @Html.ActionLink("Delete", "Delete", new {  id=item.CategoryRowId })
+                @Html.ActionLink("Edit", "Edit", new { id = item.CategoryRowId }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.CategoryRowId })|
+                @Html.ActionLink("ShowProducts", "ShowProducts", new { id = item.CategoryRowId })
             </td>
         </tr>
 }

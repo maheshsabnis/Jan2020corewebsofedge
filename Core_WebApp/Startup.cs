@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Core_WebApp.CustomFilters;
 
 namespace Core_WebApp
 {
@@ -46,7 +47,11 @@ namespace Core_WebApp
         public void ConfigureServices(IServiceCollection services)
         {
             // MVC Controllers +view and API Controllers
-            services.AddControllersWithViews();
+            // register the Custom Exception Filter
+            services.AddControllersWithViews(options => {
+                options.Filters.Add(typeof(MyExceptionFilterAttribute));
+                options.Filters.Add(typeof(LogActionFilter));
+            });
             // register the DbContext class in DI
             services.AddDbContext<CoreAppDbContext>((options) =>
             {

@@ -54,13 +54,27 @@ namespace Core_WebApp.Controllers
         [HttpPost]
         public async  Task<IActionResult> Create(Category category)
         {
-            // validate the received category
-            if (ModelState.IsValid)
-            {
-                var res = await repository.CreateAsync(category);
-                return RedirectToAction("Index"); //redirect to Index action method
-            }
-            return View(category); // stay on Create View with errors
+            //try
+            //{
+                // validate the received category
+                if (ModelState.IsValid)
+                {
+                    if (category.BasePrice < 0)
+                        throw new Exception("Base Price Cannot be -ve");
+                    var res = await repository.CreateAsync(category);
+                    return RedirectToAction("Index"); //redirect to Index action method
+                }
+                return View(category); // stay on Create View with errors
+            //}
+            //catch (Exception ex)
+            //{
+            //    return View("Error", new ErrorViewModel()
+            //    {
+            //        ControllerName = RouteData.Values["controller"].ToString(),
+            //        ActionName = RouteData.Values["action"].ToString(),
+            //        ErrorMessage = ex.Message
+            //    }); 
+            //}
         }
 
         /// <summary>
@@ -97,6 +111,13 @@ namespace Core_WebApp.Controllers
             }
             return RedirectToAction("Index"); // with fail in delete
         }
+
+        public IActionResult ShowProducts(int id)
+        {
+            TempData["CatRowId"] = id;
+            return RedirectToAction("Index", "Product"); 
+        }
+
 
     }
 }

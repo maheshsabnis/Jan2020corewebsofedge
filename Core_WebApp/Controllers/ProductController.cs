@@ -37,8 +37,24 @@ namespace Core_WebApp.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Index()
         {
-            var res = await repository.GetAsync();
-            return View(res); // this will return Index View as the name of method is 'Index'
+            List<Product> prds = new List<Product>();
+            if (TempData.Values.Count > 0)
+            {
+                // read data from tempdata
+                var catId = Convert.ToInt32(TempData["CatRowId"]);
+                // read all Products based on CatRowId
+                prds = (from p in await repository.GetAsync()
+                        where p.CategoryRowId == catId
+                        select p).ToList();
+            }
+            else
+            {
+                prds = repository.GetAsync().Result.ToList();
+            }
+            // ask controller to maintain TempData with Key as CatRowId
+            TempData.Keep("CatRowId");
+            
+            return View(prds); // this will return Index View as the name of method is 'Index'
         }
 
         /// <summary>
@@ -47,6 +63,7 @@ namespace Core_WebApp.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Create()
         {
+            var id = Convert.ToInt32(TempData["CatRowId"]);
             var res = new Product();
             // get list of categories and assign it to the ViewBag
             // ViewBag.<Key> = value, <key> will always be the property that is to be posted from View
