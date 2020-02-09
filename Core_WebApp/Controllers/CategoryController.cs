@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Core_WebApp.Models;
 using Core_WebApp.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Core_WebApp.Controllers
 {
@@ -19,6 +20,8 @@ namespace Core_WebApp.Controllers
     /// Each HttpGet and HttpPost request is called 'ActionMethod' and its return 
     /// IActionresult (ViewResult/PartialViewResult/JsonResult/FileResult)
     /// </summary>
+    /// 
+    // [Authorize]
     public class CategoryController : Controller
     {
         // inject the Category Repository
@@ -32,6 +35,9 @@ namespace Core_WebApp.Controllers
         /// Return the List of Model Data, in our case it will be Category
         /// </summary>
         /// <returns></returns>
+        /// 
+        //    [Authorize(Roles ="Clerk,Manager,Admin")]
+        [Authorize(Policy = "ReadPolicy")]
         public async Task<IActionResult> Index()
         {
             var res = await repository.GetAsync();
@@ -42,6 +48,9 @@ namespace Core_WebApp.Controllers
         /// Return an empty Category Object to create new Category 
         /// </summary>
         /// <returns></returns>
+        /// 
+        //  [Authorize(Roles = "Manager,Admin")]
+        [Authorize(Policy = "WritePolicy")]
         public IActionResult Create()
         {
             var res = new Category();

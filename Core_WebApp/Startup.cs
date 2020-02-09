@@ -11,6 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Core_WebApp.CustomFilters;
+using Core_WebApp.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace Core_WebApp
 {
@@ -59,9 +61,48 @@ namespace Core_WebApp
                 options.UseSqlServer(Configuration.GetConnectionString("AppDbConnection"));
             });
 
+            // add services for Security Db Connection and identity
+            services.AddDbContext<SecurityContextEV>(options =>
+                    options.UseSqlServer(
+                        Configuration.GetConnectionString("SecurityContextEVConnection")));
+            // defuault is onle User Based Authentication
+            // AddDefaultIdentity() method will resolve dependencies for
+            // 1. UserManager<IdentityManager> --> Used for Creating Users
+            // 2. SignInManager<IdentityManager> --> Manages User Based Authentication
+            //services.AddDefaultIdentity<IdentityUser>(/*options => options.SignIn.RequireConfirmedAccount = true*/)
+            //    .AddEntityFrameworkStores<SecurityContextEV>();
+
+
+            // AddIdentity() method will resolve dependencies for
+            // 1. UserManager<IdentityManager> --> Used for Creating Users
+            // 2. SignInManager<IdentityManager> --> Manages User Based Authentication
+            // 3. RoleManager<IdentityRole> --> Manages all Roles
+            services.AddIdentity<IdentityUser,IdentityRole>()
+                .AddDefaultUI()
+              .AddEntityFrameworkStores<SecurityContextEV>();
+            // ends here
+
+            // adding the Authorization Service
+            services.AddAuthorization(options=> {
+                options.AddPolicy("ReadPolicy", policy =>
+                {
+                    policy.RequireRole("Admin", "Manager", "Clerk");
+                });
+
+                options.AddPolicy("WritePolicy", policy =>
+                {
+                    policy.RequireRole("Admin", "Manager");
+                });
+            });
+            // ends here
+
+
             // register repository classes in DI Container
             services.AddScoped<IRepository<Category,int>, CategoryRepository>();
             services.AddScoped<IRepository<Product, int>, ProductRepository>();
+            // the MVC Request Pipeline for Authenticating
+            // controllers/actions using [Authorize] filter
+            services.AddMvc();
 
         }
 
@@ -75,6 +116,8 @@ namespace Core_WebApp
         /// <param name="env"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // applicartion routing , default for MVC COntroller and then API Comntrollers
+            app.UseRouting();
             if (env.IsDevelopment())
             {
                 // standard dev error page
@@ -87,8 +130,8 @@ namespace Core_WebApp
             }
             // use .js/.css/.img files from wwwroot folder
             app.UseStaticFiles();
-            // applicartion routing , default for MVC COntroller and then API Comntrollers
-            app.UseRouting();
+            app.UseAuthentication(); // for authenticating the HTTP request
+
             // check for security
             app.UseAuthorization();
             // server endpoints to accept request and start routing ASP.NET Core 3.0+
@@ -97,6 +140,7 @@ namespace Core_WebApp
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages(); // for Authentication WebForms (Razor Pages)
             });
         }
     }
