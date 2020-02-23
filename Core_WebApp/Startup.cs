@@ -13,6 +13,8 @@ using Microsoft.Extensions.Hosting;
 using Core_WebApp.CustomFilters;
 using Core_WebApp.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.OpenApi.Models;
+using Core_WebApp.CustomMiddleware;
 
 namespace Core_WebApp
 {
@@ -48,10 +50,17 @@ namespace Core_WebApp
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            // WEB API Controller
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                // Use the default property (Pascal) casing.
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+            });
+
             // MVC Controllers +view and API Controllers
             // register the Custom Exception Filter
             services.AddControllersWithViews(options => {
-                options.Filters.Add(typeof(MyExceptionFilterAttribute));
+               // options.Filters.Add(typeof(MyExceptionFilterAttribute));
                 options.Filters.Add(typeof(LogActionFilter));
             });
             // register the DbContext class in DI
@@ -97,6 +106,16 @@ namespace Core_WebApp
             // ends here
 
 
+            // registration of Swagger Service
+            services.AddSwaggerGen(c =>
+            {
+                // the extension method that will generate Swagger Endpoints and
+                // documentation of WEB API
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+            });
+
+
+
             // register repository classes in DI Container
             services.AddScoped<IRepository<Category,int>, CategoryRepository>();
             services.AddScoped<IRepository<Product, int>, ProductRepository>();
@@ -130,10 +149,27 @@ namespace Core_WebApp
             }
             // use .js/.css/.img files from wwwroot folder
             app.UseStaticFiles();
+
+            // the Swagger Middleware
+
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
+
+
             app.UseAuthentication(); // for authenticating the HTTP request
 
             // check for security
             app.UseAuthorization();
+
+            // register the custom error middleware
+            app.UseCustomErrorMiddleware();
+
             // server endpoints to accept request and start routing ASP.NET Core 3.0+
             app.UseEndpoints(endpoints =>
             {
