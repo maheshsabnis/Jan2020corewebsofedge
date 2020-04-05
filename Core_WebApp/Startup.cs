@@ -81,6 +81,16 @@ namespace Core_WebApp
             //services.AddDefaultIdentity<IdentityUser>(/*options => options.SignIn.RequireConfirmedAccount = true*/)
             //    .AddEntityFrameworkStores<SecurityContextEV>();
 
+            // add the CORS Policy
+            // for all origines/methods/headers
+            services.AddCors(options =>
+            {
+                options.AddPolicy("corspolicy", policy =>
+                {
+                    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
+
 
             // AddIdentity() method will resolve dependencies for
             // 1. UserManager<IdentityManager> --> Used for Creating Users
@@ -167,6 +177,8 @@ namespace Core_WebApp
             // check for security
             app.UseAuthorization();
 
+            // use the cors
+            app.UseCors("corspolicy");
             // register the custom error middleware
             app.UseCustomErrorMiddleware();
 
